@@ -15,6 +15,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# === LOGGING SETUP ===
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 # === CONFIGURATION ===
 DATABASE_URL = os.getenv("DATABASE_URL")
 BYBIT_API_BASE = "https://api.bybit.com/v5"
@@ -32,10 +36,6 @@ else:
 # === GLOBAL STATE ===
 last_collection_time: Optional[datetime] = None
 collection_task: Optional[asyncio.Task] = None
-
-# === LOGGING SETUP ===
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
 
 # === PYDANTIC MODELS ===
 class OptionsDataPoint(BaseModel):
