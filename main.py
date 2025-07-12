@@ -529,25 +529,32 @@ async def lifespan(app: FastAPI):
     
     logger.info("🚀 Starting BTC Options Tracker API...")
     
-    # Initialize database
-    if not create_tables():
-        logger.error("Failed to create database tables")
-        raise RuntimeError("Database initialization failed")
-    
-    # Initialize last collection time from database
-    last_collection_time = get_last_collection_from_db()
-    if last_collection_time:
-        logger.info(f"📊 Last collection from database: {last_collection_time}")
+    # Initialize database only if DATABASE_URL is available
+    if DATABASE_URL:
+        if not create_tables():
+            logger.warning("Failed to create database tables - continuing without database")
+        else:
+            # Initialize last collection time from database
+            last_collection_time = get_last_collection_from_db()
+            if last_collection_time:
+                logger.info(f"📊 Last collection from database: {last_collection_time}")
+            else:
+                logger.info("📊 No previous collections found in database")
     else:
-        logger.info("📊 No previous collections found in database")
+        logger.warning("📊 Database not configured - running in API-only mode")
     
-    # Start the time monitoring task
-    collection_task = asyncio.create_task(time_monitor())
-    logger.info("⏰ Time monitoring started - waiting for collection slots")
+    # Start the time monitoring task only if database is available
+    if DATABASE_URL:
+        collection_task = asyncio.create_task(time_monitor())
+        logger.info("⏰ Time monitoring started - waiting for collection slots")
+        
+        # Show next collection time
+        next_slot = get_next_collection_slot()
+        logger.info(f"⏭️  Next collection slot: {next_slot.strftime('%H:%M:%S')}")
+    else:
+        logger.info("⏰ Time monitoring disabled - no database configured")
     
-    # Show next collection time
-    next_slot = get_next_collection_slot()
-    logger.info(f"⏭️  Next collection slot: {next_slot.strftime('%H:%M:%S')}")
+    logger.info("✅ API startup complete")
     
     yield
     
