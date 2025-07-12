@@ -16,9 +16,18 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # === CONFIGURATION ===
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://myuser:mypassword@localhost:5432/mydatabase")
+DATABASE_URL = os.getenv("DATABASE_URL")
 BYBIT_API_BASE = "https://api.bybit.com/v5"
 FETCH_INTERVAL_MINUTES = 15  # Fixed to 15 minutes
+
+# Check if DATABASE_URL is provided
+if not DATABASE_URL:
+    logger.warning("⚠️  DATABASE_URL environment variable not set. Database features will be disabled.")
+    logger.info("💡 To enable database features, set DATABASE_URL environment variable.")
+    DATABASE_ENABLED = False
+else:
+    DATABASE_ENABLED = True
+    logger.info(f"📊 Database URL configured: {DATABASE_URL[:50]}...")
 
 # === GLOBAL STATE ===
 last_collection_time: Optional[datetime] = None
